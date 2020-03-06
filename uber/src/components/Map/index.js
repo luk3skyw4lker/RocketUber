@@ -1,9 +1,10 @@
-import React, { Component, Fragment } from 'react';
-import { View, StyleSheet, Image } from 'react-native';
-import MapView, { PROVIDER_GOOGLE, Marker } from 'react-native-maps';
+import React, {Component, Fragment} from 'react';
+import {View, StyleSheet, Image} from 'react-native';
+import MapView, {PROVIDER_GOOGLE, Marker} from 'react-native-maps';
 import Geocoder from 'react-native-geocoding';
 import Geolocation from '@react-native-community/geolocation';
-import { getPixelSize } from '../../utils';
+import {getPixelSize} from '../../utils';
+import {API_KEY} from 'react-native-dotenv';
 
 import Search from '../Search';
 import Directions from '../Directions';
@@ -19,7 +20,7 @@ import {
   LocationTimeBox,
   LocationTimeText,
   LocationTimeTextSmall,
-  MapStyle
+  MapStyle,
 } from './styles';
 
 export default class Map extends Component {
@@ -29,15 +30,15 @@ export default class Map extends Component {
       region: null,
       destination: null,
       duration: null,
-      address: null
+      address: null,
     };
-    Geocoder.init('AIzaSyCx6eomNF-EDjuJ7L-ehTCODS_M7RonorY');
+    Geocoder.init(API_KEY);
   }
 
   async componentDidMount() {
     Geolocation.getCurrentPosition(
-      async ({ coords: { latitude, longitude } }) => {
-        const response = await Geocoder.from({ latitude, longitude });
+      async ({coords: {latitude, longitude}}) => {
+        const response = await Geocoder.from({latitude, longitude});
         const address = response.results[0].address_components[1].long_name;
 
         // console.log('Address:', address);
@@ -48,24 +49,24 @@ export default class Map extends Component {
             latitude,
             longitude,
             latitudeDelta: 0.0143,
-            longitudeDelta: 0.0134
-          }
+            longitudeDelta: 0.0134,
+          },
         });
 
         // console.log('Get position succesfull:', this.state.region);
         // console.log('State Address:', this.state.address);
       },
-      () => { },
+      () => {},
       {
         timeout: 10000,
         maximumAge: 4000,
-        enableHighAccuracy: true
-      }
+        enableHighAccuracy: true,
+      },
     );
   }
 
-  handleLocationSelected = (data, { geometry }) => {
-    const { location } = geometry;
+  handleLocationSelected = (data, {geometry}) => {
+    const {location} = geometry;
 
     // console.log('Location:', location);
 
@@ -73,44 +74,43 @@ export default class Map extends Component {
       destination: {
         latitude: location.lat,
         longitude: location.lng,
-        title: data.structured_formatting.main_text
-      }
+        title: data.structured_formatting.main_text,
+      },
     });
 
     console.log('Destination:', this.state.destination);
-  }
+  };
 
   handleBack = () => {
     this.setState({
-      destination: null
+      destination: null,
     });
-  }
+  };
 
   render() {
-    const { region, destination, duration, address } = this.state;
+    const {region, destination, duration, address} = this.state;
 
     // console.log('Region:', region);
 
     return (
-      <View style={{ flex: 1 }}>
+      <View style={{flex: 1}}>
         <MapView
           provider={PROVIDER_GOOGLE}
-          style={{ flex: 1, ...StyleSheet.absoluteFillObject }}
+          style={{flex: 1, ...StyleSheet.absoluteFillObject}}
           region={region}
           showsUserLocation
           loadingEnabled
-          ref={el => this.mapView = el}
+          ref={el => (this.mapView = el)}
           customMapStyle={MapStyle}
-          showsMyLocationButton={false}
-        >
+          showsMyLocationButton={false}>
           {destination && (
             <Fragment>
               <Directions
                 origin={region}
                 destination={destination}
-                onReady={(result) => {
+                onReady={result => {
                   this.setState({
-                    duration: Math.floor(result.duration)
+                    duration: Math.floor(result.duration),
                   });
 
                   // console.log('Duration:', this.state.duration);
@@ -120,25 +120,21 @@ export default class Map extends Component {
                       right: getPixelSize(50),
                       left: getPixelSize(30),
                       top: getPixelSize(50),
-                      bottom: getPixelSize(350)
-                    }
-                  })
+                      bottom: getPixelSize(350),
+                    },
+                  });
                 }}
               />
               <Marker
                 coordinate={destination}
-                anchor={{ x: 0, y: 0 }}
-                image={markerImage}
-              >
+                anchor={{x: 0, y: 0}}
+                image={markerImage}>
                 <LocationBox>
                   <LocationText>{destination.title}</LocationText>
                 </LocationBox>
               </Marker>
 
-              <Marker
-                coordinate={region}
-                anchor={{ x: 0, y: 0 }}
-              >
+              <Marker coordinate={region} anchor={{x: 0, y: 0}}>
                 <LocationBox>
                   <LocationTimeBox>
                     <LocationTimeText>{duration}</LocationTimeText>
@@ -159,8 +155,8 @@ export default class Map extends Component {
             <Details />
           </Fragment>
         ) : (
-            <Search onLocationSelected={this.handleLocationSelected} />
-          )}
+          <Search onLocationSelected={this.handleLocationSelected} />
+        )}
       </View>
     );
   }
